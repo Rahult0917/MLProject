@@ -2,15 +2,29 @@ import React, { useState } from 'react';
 
 function TweetInput() {
   const [tweet, setTweet] = useState('');
+  const [result, setResult] = useState('');  
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); 
-    alert('Still in progress');
-    console.log('Submitted tweet:', tweet);
-    setTweet(''); 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!tweet) return;  
+
+    try {
+      const response = await fetch('http://localhost:5000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ review: tweet })
+      });
+      const data = await response.json();
+      setResult(data.prediction);  
+      setTweet('');  
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to fetch the prediction');
+    }
   };
 
-  
   const styles = {
     container: {
       display: 'flex',
@@ -50,6 +64,12 @@ function TweetInput() {
       color: 'white',
       cursor: 'pointer',
       fontFamily: 'Chelsea Market',
+    },
+    result: { 
+      color: 'white',
+      fontSize: '20px',
+      marginTop: '20px',
+      fontFamily: 'Chelsea Market',
     }
   };
 
@@ -67,9 +87,11 @@ function TweetInput() {
         />
         <button type="submit" style={styles.button}>Submit</button>
       </form>
+      {result && <p style={styles.result}>The review is {result}.</p>}
     </div>
   );
 }
 
 export default TweetInput;
+
 
